@@ -7,6 +7,8 @@ import java.util.List;
 public class OperationModel {
     @JsonProperty("oper_type")
     public int type;
+    @JsonProperty("equip_type")
+    public int equipmentType;
     @JsonProperty("oper_time")
     public double time;
     @JsonProperty("oper_async_point")

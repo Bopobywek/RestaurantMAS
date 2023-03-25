@@ -13,8 +13,6 @@ public class DishCardModel {
     public String description;
     @JsonProperty("card_time")
     public double time;
-    @JsonProperty("equip_type")
-    public int equipmentType;
     @JsonProperty("operations")
     public List<OperationModel> operations;
 }
