@@ -16,10 +16,7 @@ import ru.edu.hse.agents.MenuAgent;
 import ru.edu.hse.agents.VisitorAgent;
 import ru.edu.hse.agents.WarehouseAgent;
 import ru.edu.hse.configuration.JadeAgent;
-import ru.edu.hse.models.EquipmentCollectionModel;
-import ru.edu.hse.models.MenuDishesModel;
-import ru.edu.hse.models.ProductsModel;
-import ru.edu.hse.models.VisitorsOrdersModel;
+import ru.edu.hse.models.*;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -57,8 +54,10 @@ class MainController {
             model = mapper.
                     readValue(getClass().getClassLoader().getResource("menu_dishes.json"),
                             MenuDishesModel.class);
-            createAgent(MenuAgent.class, MenuAgent.class.getName(),
-                    model.menuDishModels).start();
+            DishCardsModel dishCardsModel = mapper.readValue(getClass().getClassLoader().getResource("dish_cards.json"),
+                    DishCardsModel.class);
+            createAgent(MenuAgent.class, "MenuAgent",
+                    new Object[] {model.menuDishModels, dishCardsModel.dishCardModels}).start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -89,7 +88,7 @@ class MainController {
             model = mapper.
                     readValue(getClass().getClassLoader().getResource("products.json"),
                             ProductsModel.class);
-            createAgent(WarehouseAgent.class, WarehouseAgent.class.getName(), model.productsModels()).start();
+            createAgent(WarehouseAgent.class, "WarehouseAgent", model.productsModels()).start();
         } catch (Exception e) {
             e.printStackTrace();
         }
