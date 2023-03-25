@@ -14,12 +14,12 @@ import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.util.Logger;
+import jade.wrapper.AgentContainer;
 import ru.edu.hse.configuration.JadeAgent;
-import ru.edu.hse.models.MenuDishModel;
+import ru.edu.hse.models.*;
 
-import java.util.ArrayDeque;
-import java.util.List;
-import java.util.Queue;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.logging.Level;
 
 @JadeAgent
@@ -28,10 +28,13 @@ public class SupervisorAgent extends Agent {
     private static Queue<ACLMessage> visitors = new ArrayDeque<>();
     private static final AID menu = new AID("MenuAgent", AID.ISLOCALNAME);
     private final Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
+    private AgentContainer container;
 
 
     @Override
     protected void setup() {
+        logger.log(Level.INFO, "Supervisor is created");
+        container = getContainerController();
         var agentDescription = new DFAgentDescription();
         agentDescription.setName(getAID());
         var serviceDescription = new ServiceDescription();
@@ -43,6 +46,11 @@ public class SupervisorAgent extends Agent {
         } catch (FIPAException exception) {
             exception.printStackTrace();
         }
+
+        createMenu();
+        createWarehouse();
+        createVisitors();
+        createEquipment();
 
         addBehaviour(new ReceiveOrderBehaviour());
         addBehaviour(new OrderServerBehaviour());
@@ -60,6 +68,7 @@ public class SupervisorAgent extends Agent {
     }
 
     private class ReceiveOrderBehaviour extends CyclicBehaviour {
+
         @Override
         public void action() {
             var messageTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId("order-placing"),
@@ -75,8 +84,8 @@ public class SupervisorAgent extends Agent {
     }
 
 
-
     private class OrderServerBehaviour extends CyclicBehaviour {
+
         private int step = 0;
 
         @Override
@@ -105,9 +114,34 @@ public class SupervisorAgent extends Agent {
                         } catch (JsonProcessingException e) {
                             e.printStackTrace();
                         }
-                        // TODO: создать заказ
+
                         var visitorOrder = visitors.remove();
-                        logger.log(Level.INFO, "Supervisor creates order for " + visitorOrder.getSender().getLocalName());
+
+                        List<DishModel> visitorDishList;
+                        try {
+                            visitorDishList = mapper.readValue(visitorOrder.getContent(), new TypeReference<>() {
+                            });
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        // TODO: проверить по меню
+                        var validDishes = new HashMap<Integer, MenuDishModel>();
+                        for (var validDish : menuItems) {
+                            validDishes.put(validDish.id, validDish);
+                        }
+
+                        List<MenuDishModel> orderDishes = new ArrayList<>();
+                        for (var dish : visitorDishList) {
+                            if (validDishes.containsKey(dish.id) && validDishes.get(dish.id).isActive) {
+                                orderDishes.add(validDishes.get(dish.id));
+                            }
+                        }
+
+                        // TODO: создать заказ
+                        createOrderAgent(visitorOrder.getSender(), orderDishes);
+                        logger.log(Level.INFO,
+                                "Supervisor creates order for " + visitorOrder.getSender().getLocalName());
                         step = 0;
                     } else {
                         block();
@@ -116,5 +150,78 @@ public class SupervisorAgent extends Agent {
             }
         }
 
+        private void createOrderAgent(AID aid, List<MenuDishModel> order) {
+            try {
+                container.createNewAgent(MessageFormat.format("OrderAgent$$${0}", aid.getLocalName()),
+                        OrderAgent.class.getName(), new Object[]{order, aid}).start();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    }
+
+    void createMenu() {
+        var mapper = new ObjectMapper();
+        MenuDishesModel model;
+        try {
+            model = mapper.
+                    readValue(getClass().getClassLoader().getResource("menu_dishes.json"),
+                            MenuDishesModel.class);
+            DishCardsModel dishCardsModel = mapper.readValue(getClass().getClassLoader().getResource("dish_cards.json"),
+                    DishCardsModel.class);
+            container.createNewAgent("MenuAgent", MenuAgent.class.getName(),
+                    new Object[]{model.menuDishModels, dishCardsModel.dishCardModels}).start();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    void createWarehouse() {
+        var mapper = new ObjectMapper();
+        ProductsModel model = null;
+        try {
+            model = mapper.
+                    readValue(getClass().getClassLoader().getResource("products.json"),
+                            ProductsModel.class);
+            container.createNewAgent("WarehouseAgent", WarehouseAgent.class.getName(), model.productsModels()).start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void createVisitors() {
+        try {
+            var mapper = new ObjectMapper();
+            var models = mapper.
+                    readValue(getClass().getClassLoader().getResource("visitors_orders.json"),
+                            VisitorsOrdersModel.class);
+            int index = 0;
+            for (var visitorModel : models.visitorModels()) {
+                container.createNewAgent(visitorModel.name, VisitorAgent.class.getName(),
+                        new Object[]{visitorModel}).start();
+                ++index;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void createEquipment() {
+        var mapper = new ObjectMapper();
+        EquipmentCollectionModel model = null;
+        try {
+            model = mapper.
+                    readValue(getClass().getClassLoader().getResource("equipment.json"),
+                            EquipmentCollectionModel.class);
+            int index = 0;
+            for (var equipModel : model.equipmentModels()) {
+                container.createNewAgent(MessageFormat.format("{0}{1}", EquipmentAgent.class.getName(), index), EquipmentAgent.class.getName(),
+                        new Object[]{equipModel}).start();
+                ++index;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
