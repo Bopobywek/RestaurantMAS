@@ -111,6 +111,7 @@ public class SupervisorAgent extends Agent {
                         try {
                             menuItems = mapper.readValue(msg.getContent(), new TypeReference<>() {
                             });
+
                         } catch (JsonProcessingException e) {
                             e.printStackTrace();
                         }

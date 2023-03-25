@@ -24,6 +24,7 @@ public class VisitorAgent extends Agent {
 
     @Override
     protected void setup() {
+        logger.log(Level.INFO, MessageFormat.format("Visitor {0} is created.", getAID().getLocalName()));
         var args = getArguments();
         if (args != null) {
             visitorData = (VisitorModel) args[0];

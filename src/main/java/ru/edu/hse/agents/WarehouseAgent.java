@@ -25,6 +25,7 @@ public class WarehouseAgent extends Agent {
 
     @Override
     protected void setup() {
+        logger.log(Level.INFO, "Warehouse is created");
         Object[] args = getArguments();
         if (args != null) {
             products = Arrays.stream((ProductModel[]) args).toList();

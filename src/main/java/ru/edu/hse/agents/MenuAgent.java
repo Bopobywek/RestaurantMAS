@@ -29,6 +29,7 @@ public class MenuAgent extends Agent {
 
     @Override
     protected void setup() {
+        logger.log(Level.INFO, "Menu is created");
         Object[] args = getArguments();
         if (args != null) {
             menu = Arrays.stream((MenuDishModel[]) args[0]).toList();
