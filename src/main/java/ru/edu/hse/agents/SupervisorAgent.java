@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -25,7 +24,7 @@ import java.util.logging.Level;
 @JadeAgent
 public class SupervisorAgent extends Agent {
     private static List<MenuDishModel> menuItems;
-    private static Queue<ACLMessage> visitors = new ArrayDeque<>();
+    private static final Queue<ACLMessage> visitors = new ArrayDeque<>();
     private static final AID menu = new AID("MenuAgent", AID.ISLOCALNAME);
     private final Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
     private AgentContainer container;
@@ -49,8 +48,8 @@ public class SupervisorAgent extends Agent {
 
         createMenu();
         createWarehouse();
-        createVisitors();
         createEquipment();
+        createVisitors();
 
         addBehaviour(new ReceiveOrderBehaviour());
         addBehaviour(new OrderServerBehaviour());
