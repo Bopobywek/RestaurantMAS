@@ -1,8 +1,14 @@
 package ru.edu.hse.agents;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import jade.util.Logger;
 import ru.edu.hse.models.DishCardModel;
 import ru.edu.hse.models.MenuDishModel;
@@ -16,7 +22,9 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class MenuAgent extends Agent {
-    private List<MenuDishModel> dishes;
+    private List<MenuDishModel> menu;
+    private HashMap<Integer, DishCardModel> dishCardModels = new HashMap<>();
+    private static final AID warehouse = new AID("WarehouseAgent", AID.ISLOCALNAME);
     private final Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
 
     @Override
