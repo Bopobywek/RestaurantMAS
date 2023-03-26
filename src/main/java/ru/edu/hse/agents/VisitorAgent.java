@@ -50,7 +50,7 @@ public class VisitorAgent extends Agent {
 
     @Override
     protected void takeDown() {
-        System.out.println(MessageFormat.format("{0}, bye-bye", getAID().getName()));
+        System.out.println(MessageFormat.format("{0}, bye-bye", getAID().getLocalName()));
     }
 
     private class MakeOrderBehaviour extends OneShotBehaviour {
@@ -81,8 +81,9 @@ public class VisitorAgent extends Agent {
                         logger.log(Level.INFO, MessageFormat.format("Approximate time of {0} is {1} minutes",
                                 msg.getSender().getLocalName(), time));
                     } else {
-                        logger.log(Level.INFO, MessageFormat.format("{0} is ready!",
-                                msg.getSender().getLocalName()));
+                        logger.log(Level.INFO, MessageFormat.format("{0} got his order!",
+                                getLocalName()));
+                        doDelete();
                     }
 
                 } catch (JsonProcessingException e) {

@@ -125,7 +125,6 @@ public class OrderAgent extends Agent {
                     }
                 }
                 case 2 -> {
-                    // TODO: Создавать агентов процесса
                     logger.log(Level.INFO,
                             MessageFormat.format("For {0} final dish list size is {1}", visitorAID.getLocalName(), finalMenuDishList.size()));
                     int index = 0;
@@ -176,13 +175,16 @@ public class OrderAgent extends Agent {
                     throw new RuntimeException(e);
                 }
                 sendStatus();
+                if (Math.abs(timeLeft) < 1e-9) {
+                    doDelete();
+                }
             } else {
                 block();
             }
         }
     }
 
-    private void sendStatus(){
+    private void sendStatus() {
         JsonMessage cfp = new JsonMessage(ACLMessage.INFORM);
         cfp.addReceiver(visitor);
 
