@@ -16,6 +16,8 @@ import jade.util.Logger;
 import jade.wrapper.AgentContainer;
 import ru.edu.hse.configuration.JadeAgent;
 import ru.edu.hse.models.*;
+import ru.edu.hse.util.ColorfulLogger;
+import ru.edu.hse.util.DebugColor;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -26,7 +28,8 @@ public class SupervisorAgent extends Agent {
     private static List<MenuDishModel> menuItems;
     private static final Queue<ACLMessage> visitors = new ArrayDeque<>();
     private static final AID menu = new AID("MenuAgent", AID.ISLOCALNAME);
-    private final Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
+    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.YELLOW, jade.util.Logger.getMyLogger(this.getClass().getName()));
+
     private AgentContainer container;
 
 
@@ -133,8 +136,8 @@ public class SupervisorAgent extends Agent {
 
                         List<MenuDishModel> orderDishes = new ArrayList<>();
                         for (var dish : visitorDishList) {
-                            if (validDishes.containsKey(dish.id) && validDishes.get(dish.id).isActive) {
-                                orderDishes.add(validDishes.get(dish.id));
+                            if (validDishes.containsKey(dish.menuId) && validDishes.get(dish.menuId).isActive) {
+                                orderDishes.add(validDishes.get(dish.menuId));
                             }
                         }
 
@@ -152,8 +155,16 @@ public class SupervisorAgent extends Agent {
 
         private void createOrderAgent(AID aid, List<MenuDishModel> order) {
             try {
+                var mapper = new ObjectMapper();
+                DishCardsModel dishCardsModel = mapper.readValue(getClass().getClassLoader().getResource("dish_cards.json"),
+                        DishCardsModel.class);
+                MenuDishModel[] orderArray = new MenuDishModel[order.size()];
+                for (int i = 0; i < order.size(); ++i) {
+                    orderArray[i] = order.get(i);
+                }
                 container.createNewAgent(MessageFormat.format("OrderAgent$$${0}", aid.getLocalName()),
-                        OrderAgent.class.getName(), new Object[]{order, aid}).start();
+                        OrderAgent.class.getName(), new Object[]{orderArray, aid, dishCardsModel.dishCardModels}).start();
+
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

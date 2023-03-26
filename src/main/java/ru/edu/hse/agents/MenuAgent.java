@@ -13,6 +13,8 @@ import jade.util.Logger;
 import ru.edu.hse.models.DishCardModel;
 import ru.edu.hse.models.MenuDishModel;
 import ru.edu.hse.models.ProductModel;
+import ru.edu.hse.util.ColorfulLogger;
+import ru.edu.hse.util.DebugColor;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -25,7 +27,8 @@ public class MenuAgent extends Agent {
     private List<MenuDishModel> menu;
     private HashMap<Integer, DishCardModel> dishCardModels = new HashMap<>();
     private static final AID warehouse = new AID("WarehouseAgent", AID.ISLOCALNAME);
-    private final Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
+    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.PURPLE, jade.util.Logger.getMyLogger(this.getClass().getName()));
+
 
     @Override
     protected void setup() {
@@ -179,21 +182,10 @@ public class MenuAgent extends Agent {
         private void updateMenu(HashMap<Integer, Double> availableProducts) {
             for (var dish : menu) {
                 var card = dishCardModels.get(dish.card);
-                var operations = card.operations;
 
-                HashMap<Integer, Double> productsInDish = new HashMap<>();
-                for (var operation : operations) {
-                    for (var productInOperation : operation.productModels) {
-                        if (productsInDish.containsKey(productInOperation.type)) {
-                            double was = productsInDish.get(productInOperation.type);
-                            productsInDish.put(productInOperation.type, was + productInOperation.quantity);
-                        } else {
-                            productsInDish.put(productInOperation.type, productInOperation.quantity);
-                        }
-                    }
-                }
+                HashMap<Integer, Double> productsQuantity = card.getQuantityForProducts();
 
-                for (var productEntry : productsInDish.entrySet()) {
+                for (var productEntry : productsQuantity.entrySet()) {
                     var productType = productEntry.getKey();
                     dish.isActive = availableProducts.get(productType) >= productEntry.getValue();
                 }

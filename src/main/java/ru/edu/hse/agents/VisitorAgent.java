@@ -11,16 +11,18 @@ import jade.lang.acl.ACLMessage;
 import jade.util.Logger;
 import ru.edu.hse.configuration.JadeAgent;
 import ru.edu.hse.models.VisitorModel;
+import ru.edu.hse.util.ColorfulLogger;
+import ru.edu.hse.util.DebugColor;
 import ru.edu.hse.util.JsonMessage;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;
 
-@JadeAgent
 public class VisitorAgent extends Agent {
     private VisitorModel visitorData;
     private AID supervisor_aid = new AID("SupervisorAgent", AID.ISLOCALNAME);
-    private final Logger logger = jade.util.Logger.getMyLogger(this.getClass().getName());
+    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.CYAN, jade.util.Logger.getMyLogger(this.getClass().getName()));
+
 
     @Override
     protected void setup() {

@@ -25,7 +25,7 @@ import java.util.Set;
 
 class MainController {
 
-    private final ContainerController containerController;
+    private ContainerController containerController;
 
     public MainController() {
         final Runtime rt = Runtime.instance();
