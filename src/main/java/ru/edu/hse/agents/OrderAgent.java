@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -30,6 +31,7 @@ public class OrderAgent extends Agent {
     private static AID visitor;
     private HashMap<Integer, DishCardModel> dishCardModels = new HashMap<>();
     private static final AID warehouse = new AID("WarehouseAgent", AID.ISLOCALNAME);
+    private double timeLeft = 0;
 
     private final ColorfulLogger logger = new ColorfulLogger(DebugColor.BLUE, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
@@ -51,7 +53,7 @@ public class OrderAgent extends Agent {
                 logger.log(Level.INFO, MessageFormat.format("OrderAgent: DishCard {0} loaded", card.getValue().name));
             }
             addBehaviour(new ValidateDishesBehaviour(visitor, dishes));
-            // TODO: список продуктов из нужных диш кардов на каждое блюдо
+            addBehaviour(new FinishOperationBehaviour());
         }
 
     }
@@ -71,13 +73,15 @@ public class OrderAgent extends Agent {
             this.visitorAID = visitorAID;
             this.dishes = dishes;
         }
+
         private int step = 0;
+
         public void action() {
             switch (step) {
                 case 0 -> {
                     JsonMessage cfp = new JsonMessage(ACLMessage.REQUEST);
                     List<ReservationModel> reservationList = new ArrayList<>();
-                    for(var dish : dishes) {
+                    for (var dish : dishes) {
                         reservationList.add(new ReservationModel(dish, dishCardModels.get(dish.card)));
                     }
 
@@ -122,14 +126,21 @@ public class OrderAgent extends Agent {
                 }
                 case 2 -> {
                     // TODO: Создавать агентов процесса
-                        logger.log(Level.INFO,
-                                MessageFormat.format("For {0} final dish list size is {1}", visitorAID.getLocalName(), finalMenuDishList.size()));
-                        int index = 0;
-                        for (var dish : finalMenuDishList) {
-                            createProcess(dishCardModels.get(dish.card), index);
-                            ++index;
-                        }
-                        step = 3;
+                    logger.log(Level.INFO,
+                            MessageFormat.format("For {0} final dish list size is {1}", visitorAID.getLocalName(), finalMenuDishList.size()));
+                    int index = 0;
+                    for (var dish : finalMenuDishList) {
+                        timeLeft += dishCardModels
+                                .get(dish.card)
+                                .operations
+                                .stream()
+                                .mapToDouble(x -> x.time)
+                                .sum();
+                        createProcess(dishCardModels.get(dish.card), index);
+                        ++index;
+                    }
+                    sendStatus();
+                    step = 3;
                 }
             }
         }
@@ -150,5 +161,34 @@ public class OrderAgent extends Agent {
         }
     }
 
+    private class FinishOperationBehaviour extends CyclicBehaviour {
+        private static final String CONVERSATION_ID = "operation-finish";
+
+        public void action() {
+            var messageTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(CONVERSATION_ID),
+                    MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+            ACLMessage msg = myAgent.receive(messageTemplate);
+            if (msg != null) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    timeLeft -= objectMapper.readValue(msg.getContent(), double.class);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+                sendStatus();
+            } else {
+                block();
+            }
+        }
+    }
+
+    private void sendStatus(){
+        JsonMessage cfp = new JsonMessage(ACLMessage.INFORM);
+        cfp.addReceiver(visitor);
+
+        cfp.setContent(timeLeft);
+        cfp.setConversationId("order-status");
+        send(cfp);
+    }
 
 }

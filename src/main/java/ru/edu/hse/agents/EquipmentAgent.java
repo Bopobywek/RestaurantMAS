@@ -71,7 +71,7 @@ public class EquipmentAgent extends Agent {
         }
         @Override
         public void action() {
-            logger.log(Level.INFO, MessageFormat.format("{0} finish work and sent to operation signal", myAgent.getLocalName()));
+            logger.log(Level.INFO, MessageFormat.format("{0} finish work", myAgent.getLocalName()));
         }
     }
 

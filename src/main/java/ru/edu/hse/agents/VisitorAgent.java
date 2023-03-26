@@ -1,7 +1,10 @@
 package ru.edu.hse.agents;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.WakerBehaviour;
 import jade.domain.DFService;
@@ -9,6 +12,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import jade.util.Logger;
 import ru.edu.hse.configuration.JadeAgent;
 import ru.edu.hse.models.VisitorModel;
@@ -41,6 +45,7 @@ public class VisitorAgent extends Agent {
             doDelete();
         }
         logger.log(Level.INFO, MessageFormat.format("Visitor {0} is created.", getAID().getLocalName()));
+        addBehaviour(new ReceiveApproximateTimeBehaviour());
     }
 
     @Override
@@ -58,6 +63,35 @@ public class VisitorAgent extends Agent {
             cfp.setContent(visitorData.dishList);
             cfp.setConversationId(CONVERSATION_ID);
             myAgent.send(cfp);
+        }
+    }
+
+    private class ReceiveApproximateTimeBehaviour extends CyclicBehaviour {
+        private static final String CONVERSATION_ID = "order-status";
+
+        public void action() {
+            var messageTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(CONVERSATION_ID),
+                    MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+            ACLMessage msg = myAgent.receive(messageTemplate);
+            if (msg != null) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    double time = objectMapper.readValue(msg.getContent(), double.class);
+                    if (Math.abs(time) > 1e-9) {
+                        logger.log(Level.INFO, MessageFormat.format("Approximate time of {0} is {1} minutes",
+                                msg.getSender().getLocalName(), time));
+                    } else {
+                        logger.log(Level.INFO, MessageFormat.format("{0} is ready!",
+                                msg.getSender().getLocalName()));
+                    }
+
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+
+            } else {
+                block();
+            }
         }
     }
 }

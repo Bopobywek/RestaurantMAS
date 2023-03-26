@@ -33,7 +33,6 @@ public class SupervisorAgent extends Agent {
 
     private List<AID> cooks = new ArrayList<>();
     private List<AID> equipments = new ArrayList<>();
-    ;
     private AgentContainer container;
 
 

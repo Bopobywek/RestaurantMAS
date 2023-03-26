@@ -70,7 +70,11 @@ public class CookAgent extends Agent {
         }
         @Override
         public void action() {
+            ACLMessage cfp = new ACLMessage(ACLMessage.INFORM);
+            cfp.addReceiver(operationAID);
+            cfp.setConversationId("operation-finish");
             logger.log(Level.INFO, MessageFormat.format("{0} finish work and sent to operation signal", myAgent.getLocalName()));
+            myAgent.send(cfp);
         }
     }
 

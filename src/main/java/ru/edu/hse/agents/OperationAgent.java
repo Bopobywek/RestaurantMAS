@@ -2,23 +2,22 @@ package ru.edu.hse.agents;
 
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import ru.edu.hse.models.OperationModel;
 import ru.edu.hse.util.ColorfulLogger;
 import ru.edu.hse.util.DebugColor;
 import ru.edu.hse.util.JsonMessage;
 
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.logging.Level;
 
 public class OperationAgent extends Agent {
     private OperationModel operation;
-    private AID supervisor_aid = new AID("SupervisorAgent", AID.ISLOCALNAME);
+    private final AID supervisorAID = new AID("SupervisorAgent", AID.ISLOCALNAME);
     private AID process;
-    private List<AID> cooks;
-    private List<AID> equipments;
     private final ColorfulLogger logger = new ColorfulLogger(DebugColor.ORANGE, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
     @Override
@@ -30,6 +29,7 @@ public class OperationAgent extends Agent {
             operation = (OperationModel) args[1];
         }
         addBehaviour(new MakeRequestBehaviour());
+        addBehaviour(new FinishOperationBehaviour());
     }
 
     @Override
@@ -42,11 +42,32 @@ public class OperationAgent extends Agent {
 
         public void action() {
             JsonMessage cfp = new JsonMessage(ACLMessage.REQUEST);
-            cfp.addReceiver(supervisor_aid);
+            cfp.addReceiver(supervisorAID);
 
             cfp.setContent(operation);
             cfp.setConversationId(CONVERSATION_ID);
             myAgent.send(cfp);
+        }
+    }
+
+    private class FinishOperationBehaviour extends CyclicBehaviour {
+        private static final String CONVERSATION_ID = "operation-finish";
+
+        public void action() {
+            var messageTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(CONVERSATION_ID),
+                    MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+            ACLMessage msg = myAgent.receive(messageTemplate);
+            if (msg != null) {
+                JsonMessage cfp = new JsonMessage(ACLMessage.INFORM);
+                cfp.addReceiver(process);
+
+                cfp.setContent(operation.time);
+                cfp.setConversationId(CONVERSATION_ID);
+                myAgent.send(cfp);
+                doDelete();
+            } else {
+                block();
+            }
         }
     }
 }
