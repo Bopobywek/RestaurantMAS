@@ -12,12 +12,12 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import jade.util.Logger;
 import jade.wrapper.AgentContainer;
 import ru.edu.hse.configuration.JadeAgent;
 import ru.edu.hse.models.*;
 import ru.edu.hse.util.ColorfulLogger;
 import ru.edu.hse.util.DebugColor;
+import ru.edu.hse.util.JsonMessage;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -27,9 +27,13 @@ import java.util.logging.Level;
 public class SupervisorAgent extends Agent {
     private static List<MenuDishModel> menuItems;
     private static final Queue<ACLMessage> visitors = new ArrayDeque<>();
+    private static final Queue<ACLMessage> operations = new ArrayDeque<>();
     private static final AID menu = new AID("MenuAgent", AID.ISLOCALNAME);
     private final ColorfulLogger logger = new ColorfulLogger(DebugColor.BLOOD_COLOR, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
+    private List<AID> cooks = new ArrayList<>();
+    private List<AID> equipments = new ArrayList<>();
+    ;
     private AgentContainer container;
 
 
@@ -53,10 +57,36 @@ public class SupervisorAgent extends Agent {
         createWarehouse();
         createEquipment();
         createCookers();
+        doWait(1000);
+
+        DFAgentDescription template = new DFAgentDescription();
+        serviceDescription = new ServiceDescription();
+        serviceDescription.setType("cook-service");
+        template.addServices(serviceDescription);
+        try {
+            DFAgentDescription[] result = DFService.search(this, template);
+            for (var cook : result) {
+                cooks.add(cook.getName());
+                //logger.log(Level.INFO, MessageFormat.format("Found cook: {0}.", cook.getName()));
+            }
+
+            serviceDescription.setType("equipment-service");
+            template.addServices(serviceDescription);
+            result = DFService.search(this, template);
+            for (var equipment : result) {
+                equipments.add(equipment.getName());
+                //logger.log(Level.INFO, MessageFormat.format("Found equipment: {0}.", equipment.getName()));
+            }
+        } catch (FIPAException e) {
+            throw new RuntimeException(e);
+        }
+
         createVisitors();
 
         addBehaviour(new ReceiveOrderBehaviour());
         addBehaviour(new OrderServerBehaviour());
+        addBehaviour(new ReceiveOperationBehaviour());
+        addBehaviour(new OperationServerBehaviour());
     }
 
     @Override
@@ -82,6 +112,148 @@ public class SupervisorAgent extends Agent {
                 visitors.add(msg);
             } else {
                 block();
+            }
+        }
+    }
+
+    private class ReceiveOperationBehaviour extends CyclicBehaviour {
+        @Override
+        public void action() {
+            var messageTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId("operation-reservation"),
+                    MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+            ACLMessage msg = myAgent.receive(messageTemplate);
+            if (msg != null) {
+                logger.log(Level.INFO, "Supervisor received operation: " + msg.getContent());
+                operations.add(msg);
+            } else {
+                block();
+            }
+        }
+    }
+
+    private class OperationServerBehaviour extends CyclicBehaviour {
+        private int step = 0;
+        private int cookIndex = 0;
+        private int equipmentIndex = 0;
+        private OperationModel operation;
+        private String operationName;
+        private AID cook;
+        private AID equipment;
+
+        @Override
+        public void action() {
+            switch (step) {
+                case 0 -> {
+                    cook = null;
+                    equipment = null;
+                    if (!operations.isEmpty()) {
+                        ACLMessage operationMessage = operations.poll();
+                        if (operationMessage == null) {
+                            return;
+                        }
+                        var mapper = new ObjectMapper();
+                        try {
+                            operationName = operationMessage.getSender().getLocalName();
+                            operation = mapper.readValue(operationMessage.getContent(), OperationModel.class);
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                        step = 1;
+                    }
+                }
+                case 1 -> {
+                    if (equipment == null) {
+                        JsonMessage equipmentMsg = new JsonMessage(ACLMessage.REQUEST);
+                        equipmentMsg.setConversationId("equipment-reservation");
+                        equipmentMsg.setContent(operation.equipmentType);
+                        if (equipmentIndex >= equipments.size()) {
+                            equipmentIndex = 0;
+                        }
+                        equipmentMsg.addReceiver(equipments.get(equipmentIndex));
+                        myAgent.send(equipmentMsg);
+                        step = 2;
+                    } else if (cook == null) {
+                        ACLMessage cookMsg = new ACLMessage(ACLMessage.REQUEST);
+                        cookMsg.setConversationId("cook-reservation");
+                        if (cookIndex >= cooks.size()) {
+                            cookIndex = 0;
+                        }
+                        cookMsg.addReceiver(cooks.get(cookIndex));
+                        myAgent.send(cookMsg);
+                        step = 2;
+                    } else {
+                        step = 3;
+                    }
+                }
+                case 2 -> {
+                    if (equipment == null) {
+                        var messageTemplateEquipment = MessageTemplate.and(MessageTemplate.MatchConversationId("equipment-reservation"),
+                                MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+                        ACLMessage msgEquipment = myAgent.receive(messageTemplateEquipment);
+                        boolean response = false;
+                        if (msgEquipment != null) {
+                            var mapper = new ObjectMapper();
+                            try {
+                                response = mapper.readValue(msgEquipment.getContent(), boolean.class);
+                            } catch (JsonProcessingException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        if (!response) {
+                            ++equipmentIndex;
+                        } else {
+                            equipment = msgEquipment.getSender();
+                        }
+                        // т.к. не всех нашли
+                        step = 1;
+                    } else if (cook == null) {
+                        var messageTemplateCook = MessageTemplate.and(MessageTemplate.MatchConversationId("cook-reservation"),
+                                MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+                        ACLMessage msgCook = myAgent.receive(messageTemplateCook);
+                        boolean response = false;
+                        if (msgCook != null) {
+                            var mapper = new ObjectMapper();
+                            try {
+                                response = mapper.readValue(msgCook.getContent(), boolean.class);
+                            } catch (JsonProcessingException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        if (!response) {
+                            ++cookIndex;
+                            step = 1;
+                        } else {
+                            cook = msgCook.getSender();
+                            step = 3;
+                        }
+                        // т.к. не проверили ещё equip
+
+                    }
+                }
+                case 3 -> {
+                    // Нужно отправить операции ответное сообщение со стороны поваров и оборудования,
+                    // когда они закончат её выполнять.
+                    var operationExecution = new OperationExecutionModel();
+                    operationExecution.operationName = operationName;
+                    operationExecution.time = operation.time;
+
+                    JsonMessage cookRequestMessage = new JsonMessage(ACLMessage.REQUEST);
+                    cookRequestMessage.addReceiver(cook);
+                    cookRequestMessage.setContent(operationExecution);
+
+                    cookRequestMessage.setConversationId("cook-start");
+                    myAgent.send(cookRequestMessage);
+
+                    JsonMessage equipRequestMessage = new JsonMessage(ACLMessage.REQUEST);
+                    equipRequestMessage.addReceiver(equipment);
+                    equipRequestMessage.setContent(operationExecution);
+                    equipRequestMessage.setConversationId("equipment-start");
+                    myAgent.send(equipRequestMessage);
+
+                    // Начинаем искаьб
+
+                    step = 0;
+                }
             }
         }
     }

@@ -46,18 +46,22 @@ public class ProcessAgent extends Agent {
     private class OperationServerBehaviour extends Behaviour {
         private int step = 0;
         private int index = 0;
+
         @Override
         public void action() {
             switch (step) {
                 case 0 -> {
-                    if (operations.isEmpty()) {
-                        return; // TODO: НАФИГА
-                    }
+                    if (!operations.isEmpty()) {
+                        var operation = operations.poll();
+                        if (operation != null) {
+                            createOperation(operation, index);
+                            ++index;
+                            step = 1;
+                        }
 
-                    var operation = operations.remove();
-                    createOperation(operation, index);
-                    ++index;
-                    step = 1;
+                    } else {
+                        block();
+                    }
                 }
                 case 1 -> {
                     var messageTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId("operation-status"),
@@ -88,7 +92,8 @@ public class ProcessAgent extends Agent {
             }
         }
     }
-    private class OrderReceiveBehavoiur extends CyclicBehaviour{
+
+    private class OrderReceiveBehavoiur extends CyclicBehaviour {
 
         @Override
         public void action() {

@@ -3,6 +3,7 @@ package ru.edu.hse.agents;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -16,6 +17,8 @@ import ru.edu.hse.util.DebugColor;
 import ru.edu.hse.util.JsonMessage;
 
 import java.text.MessageFormat;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.logging.Level;
 
 public class VisitorAgent extends Agent {
@@ -26,34 +29,18 @@ public class VisitorAgent extends Agent {
 
     @Override
     protected void setup() {
-        logger.log(Level.INFO, MessageFormat.format("Visitor {0} is created.", getAID().getLocalName()));
         var args = getArguments();
         if (args != null) {
             visitorData = (VisitorModel) args[0];
-
-            System.out.println(MessageFormat.format("Found supervisor: {0}.",
-                            supervisor_aid));
-//            DFAgentDescription template = new DFAgentDescription();
-//            ServiceDescription serviceDescription = new ServiceDescription();
-//            serviceDescription.setType("order-supervising");
-//            template.addServices(serviceDescription);
-//            try {
-//                DFAgentDescription[] result = DFService.search(this, template);
-//                if (result.length != 0) {
-//                    supervisor_aid = result[0].getName();
-//                    System.out.println(MessageFormat.format("Found supervisor: {0}.",
-//                            supervisor_aid));
-//                }
-//            } catch (FIPAException e) {
-//                e.printStackTrace();
-//            }
-
+            Date start = new Date(visitorData.orderStarted.getYear(), visitorData.orderStarted.getMonth(), visitorData.orderStarted.getDate(), 13, 0);
+            this.doWait((visitorData.orderStarted.getTime() - start.getTime()) / 900);
             addBehaviour(new MakeOrderBehaviour());
         } else {
             System.out.println(MessageFormat.format("No information about visitor {0} specified",
                     getAID().getName()));
             doDelete();
         }
+        logger.log(Level.INFO, MessageFormat.format("Visitor {0} is created.", getAID().getLocalName()));
     }
 
     @Override

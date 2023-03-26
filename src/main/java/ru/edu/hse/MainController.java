@@ -32,7 +32,7 @@ class MainController {
         final Profile p = new ProfileImpl();
 
         p.setParameter(Profile.MAIN_HOST, "localhost");
-        p.setParameter(Profile.MAIN_PORT, "8080");
+        p.setParameter(Profile.MAIN_PORT, "1099"); //8080
         p.setParameter(Profile.GUI, "true");
 
         containerController = rt.createMainContainer(p);
