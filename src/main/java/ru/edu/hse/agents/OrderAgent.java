@@ -29,7 +29,8 @@ public class OrderAgent extends Agent {
     private double timeLeft = 0;
     private int orderSum = 0;
 
-    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.BLUE, jade.util.Logger.getMyLogger(this.getClass().getName()));
+    private final ColorfulLogger logger =
+            new ColorfulLogger(DebugColor.BLUE, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
     @Override
     protected void setup() {
@@ -46,7 +47,8 @@ public class OrderAgent extends Agent {
                 dishCardModels.put(dishCard.id, dishCard);
             }
             for (var card : dishCardModels.entrySet()) {
-                logger.log(Level.INFO, MessageFormat.format("OrderAgent: DishCard {0} loaded", card.getValue().name));
+                logger.log(Level.INFO, MessageFormat.format("OrderAgent: DishCard {0} loaded",
+                        card.getValue().name));
             }
             addBehaviour(new ValidateDishesBehaviour(visitor, dishes));
             addBehaviour(new FinishOperationBehaviour());
@@ -122,7 +124,8 @@ public class OrderAgent extends Agent {
                 }
                 case 2 -> {
                     logger.log(Level.INFO,
-                            MessageFormat.format("For {0} final dish list size is {1}", visitorAID.getLocalName(), finalMenuDishList.size()));
+                            MessageFormat.format("For {0} final dish list size is {1}",
+                                    visitorAID.getLocalName(), finalMenuDishList.size()));
                     int index = 0;
                     for (var dish : finalMenuDishList) {
                         timeLeft += dishCardModels

@@ -31,7 +31,8 @@ public class ProcessAgent extends Agent {
     private DishCardModel card;
     private AID order;
     private int totalOperations;
-    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.YELLOW, jade.util.Logger.getMyLogger(this.getClass().getName()));
+    private final ColorfulLogger logger =
+            new ColorfulLogger(DebugColor.YELLOW, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
     @Override
     public void setup() {
@@ -46,9 +47,9 @@ public class ProcessAgent extends Agent {
             logModel.dish = card.id;
             operations.addAll(card.operations);
             totalOperations = operations.size();
-            logger.log(Level.INFO, MessageFormat.format("Process {0} is created with {1} operations.", getAID().getLocalName(), totalOperations));
+            logger.log(Level.INFO, MessageFormat.format("Process {0} is created with {1} operations.",
+                    getAID().getLocalName(), totalOperations));
             addBehaviour(new OperationServerBehaviour());
-//            addBehaviour(new FinishOperationBehaviour());
         }
     }
 
@@ -88,7 +89,7 @@ public class ProcessAgent extends Agent {
                         var mapper = new ObjectMapper();
                         Object[] data;
                         try {
-                             data = mapper.readValue(msg.getContent(), Object[].class);
+                            data = mapper.readValue(msg.getContent(), Object[].class);
                         } catch (JsonProcessingException e) {
                             throw new RuntimeException(e);
                         }

@@ -24,7 +24,8 @@ import java.util.logging.Level;
 
 public class EquipmentAgent extends Agent {
     private EquipmentModel equipment;
-    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.SAND, jade.util.Logger.getMyLogger(this.getClass().getName()));
+    private final ColorfulLogger logger =
+            new ColorfulLogger(DebugColor.SAND, jade.util.Logger.getMyLogger(this.getClass().getName()));
     private boolean isVacant;
 
     @Override
@@ -70,13 +71,15 @@ public class EquipmentAgent extends Agent {
         public SendOperationSignalBehaviour(String operationName) {
             this.operationAID = new AID(operationName, AID.ISLOCALNAME);
         }
+
         @Override
         public void action() {
             var cfp = new JsonMessage(ACLMessage.INFORM);
             cfp.addReceiver(operationAID);
             cfp.setContent(equipment.id);
             cfp.setConversationId("equip-finish");
-            logger.log(Level.INFO, MessageFormat.format("{0} finish work and sent to operation signal", myAgent.getLocalName()));
+            logger.log(Level.INFO, MessageFormat.format("{0} finish work and sent to operation signal",
+                    myAgent.getLocalName()));
             myAgent.send(cfp);
         }
     }
@@ -93,7 +96,7 @@ public class EquipmentAgent extends Agent {
                 try {
                     var operation = mapper.readValue(msgCook.getContent(), OperationExecutionModel.class);
                     isVacant = false;
-                    addBehaviour(new WakerBehaviour(myAgent, ((int)operation.time * 1000L) / 900) {
+                    addBehaviour(new WakerBehaviour(myAgent, ((int) operation.time * 1000L) / 900) {
                         @Override
                         protected void onWake() {
                             isVacant = true;
@@ -140,8 +143,7 @@ public class EquipmentAgent extends Agent {
                     }
                 }
                 myAgent.send(reply);
-            }
-            else{
+            } else {
                 block();
             }
         }

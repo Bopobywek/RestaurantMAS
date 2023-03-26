@@ -20,7 +20,8 @@ import java.util.logging.Level;
 public class VisitorAgent extends Agent {
     private VisitorModel visitorData;
     private final AID supervisor_aid = new AID("SupervisorAgent", AID.ISLOCALNAME);
-    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.CYAN, jade.util.Logger.getMyLogger(this.getClass().getName()));
+    private final ColorfulLogger logger =
+            new ColorfulLogger(DebugColor.CYAN, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
 
     @Override
@@ -28,7 +29,9 @@ public class VisitorAgent extends Agent {
         var args = getArguments();
         if (args != null) {
             visitorData = (VisitorModel) args[0];
-            Date start = new Date(visitorData.orderStarted.getYear(), visitorData.orderStarted.getMonth(), visitorData.orderStarted.getDate(), 13, 0);
+            Date start = new Date(visitorData.orderStarted.getYear(),
+                    visitorData.orderStarted.getMonth(),
+                    visitorData.orderStarted.getDate(), 13, 0);
             this.doWait((visitorData.orderStarted.getTime() - start.getTime()) / 900);
             addBehaviour(new MakeOrderBehaviour());
         } else {

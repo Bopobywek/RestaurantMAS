@@ -24,7 +24,8 @@ import java.util.logging.Level;
 
 public class CookAgent extends Agent {
     private CookModel cook;
-    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.PINK, jade.util.Logger.getMyLogger(this.getClass().getName()));
+    private final ColorfulLogger logger =
+            new ColorfulLogger(DebugColor.PINK, jade.util.Logger.getMyLogger(this.getClass().getName()));
     private boolean isVacant = true;
 
     @Override
@@ -69,13 +70,15 @@ public class CookAgent extends Agent {
         public SendOperationSignalBehaviour(String operationName) {
             this.operationAID = new AID(operationName, AID.ISLOCALNAME);
         }
+
         @Override
         public void action() {
             var cfp = new JsonMessage(ACLMessage.INFORM);
             cfp.addReceiver(operationAID);
             cfp.setContent(cook.id);
             cfp.setConversationId("cook-finish");
-            logger.log(Level.INFO, MessageFormat.format("{0} finish work and sent to operation signal", myAgent.getLocalName()));
+            logger.log(Level.INFO, MessageFormat.format("{0} finish work and sent to operation signal",
+                    myAgent.getLocalName()));
             myAgent.send(cfp);
         }
     }
@@ -92,7 +95,8 @@ public class CookAgent extends Agent {
                 try {
                     var operation = mapper.readValue(msgCook.getContent(), OperationExecutionModel.class);
                     isVacant = false;
-                    addBehaviour(new WakerBehaviour(myAgent, ((int)operation.time * 1000L) / 900) {
+                    // Константа 900 == для ускорения моделирования времени
+                    addBehaviour(new WakerBehaviour(myAgent, ((int) operation.time * 1000L) / 900) {
                         @Override
                         protected void onWake() {
                             isVacant = true;

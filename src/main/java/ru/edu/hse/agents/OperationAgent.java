@@ -28,7 +28,8 @@ public class OperationAgent extends Agent {
     private final AID supervisorAID = new AID("SupervisorAgent", AID.ISLOCALNAME);
     private AID process;
     private final OperationLogModel logModel = new OperationLogModel();
-    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.ORANGE, jade.util.Logger.getMyLogger(this.getClass().getName()));
+    private final ColorfulLogger logger =
+            new ColorfulLogger(DebugColor.ORANGE, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
     @Override
     public void setup() {
@@ -107,7 +108,7 @@ public class OperationAgent extends Agent {
                     JsonMessage cfp = new JsonMessage(ACLMessage.INFORM);
                     cfp.addReceiver(process);
 
-                    cfp.setContent(new Object[] {logModel.id, operation.time});
+                    cfp.setContent(new Object[]{logModel.id, operation.time});
                     cfp.setConversationId(CONVERSATION_ID);
                     myAgent.send(cfp);
                     logModel.ended = new Date();

@@ -18,7 +18,8 @@ import java.util.logging.Level;
 public class WarehouseAgent extends Agent {
     private static final Queue<ACLMessage> orders = new ArrayDeque<>();
     private List<ProductModel> products;
-    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.GREEN, jade.util.Logger.getMyLogger(this.getClass().getName()));
+    private final ColorfulLogger logger =
+            new ColorfulLogger(DebugColor.GREEN, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
 
     @Override
@@ -67,7 +68,6 @@ public class WarehouseAgent extends Agent {
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
-                // new TypeReference<List<ProductModel>>(){}
             } else {
                 block();
             }

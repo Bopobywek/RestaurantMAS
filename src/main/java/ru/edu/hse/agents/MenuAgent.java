@@ -24,7 +24,8 @@ public class MenuAgent extends Agent {
     private List<MenuDishModel> menu;
     private final HashMap<Integer, DishCardModel> dishCardModels = new HashMap<>();
     private static final AID warehouse = new AID("WarehouseAgent", AID.ISLOCALNAME);
-    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.PURPLE, jade.util.Logger.getMyLogger(this.getClass().getName()));
+    private final ColorfulLogger logger =
+            new ColorfulLogger(DebugColor.PURPLE, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
 
     @Override
@@ -50,24 +51,8 @@ public class MenuAgent extends Agent {
 
     @Override
     protected void takeDown() {
-        // Printout a dismissal message
         System.out.println("Menu-agent " + getAID().getName() + " terminating.");
     }
-
-//    private class SendMenuBehaviour extends CyclicBehaviour {
-//        @Override
-//        public void action() {
-//            var messageTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId("menu-get"),
-//                    MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
-//            ACLMessage msg = myAgent.receive(messageTemplate);
-//            if (msg != null) {
-//                logger.log(Level.INFO, "Menu received request");
-//                addBehaviour(new WarehouseStateRequestBehaviour());
-//            } else {
-//                block();
-//            }
-//        }
-//    }
 
     private class WarehouseStateRequestBehaviour extends CyclicBehaviour {
         static int step = 0;
@@ -139,43 +124,6 @@ public class MenuAgent extends Agent {
             }
         }
 
-        /*
-        "availableProducts": [
-    {
-      "prod_item_id": 172,
-      "prod_item_type": 18,
-      "prod_item_name": "Princess Nuri tea in bags",
-      "prod_item_company": "ORIMI",
-      "prod_item_unit": "pc.",
-      "prod_item_quantity": 874,
-      "prod_item_cost": 1.5,
-      "prod_item_delivered": "2023-01-15T08:10:36",
-      "prod_item_valid_until": "2024-12-31T23:59:59"
-    }
-    ]
-
-    "dish_cards": [
-    {
-      "card_id": 518,
-      "dish_name": "Princess Nuri tea bag in a paper cup",
-      "card_descr": "pouring boiled water into a paper cup + 2 bags of sugar",
-      "card_time": 0.15,
-      "equip_type": 25,
-      "operations": [
-        {
-          "oper_type": 17,
-          "oper_time": 0.15,
-          "oper_async_point": 0,
-          "oper_products": [
-            {
-              "prod_type": 18,
-              "prod_quantity": 1
-            }
-            ]
-          }
-        ]
-       }
-         */
         private void updateMenu(HashMap<Integer, Double> availableProducts) {
             for (var dish : menu) {
                 var card = dishCardModels.get(dish.card);

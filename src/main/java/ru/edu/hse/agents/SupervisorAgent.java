@@ -3,6 +3,7 @@ package ru.edu.hse.agents;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import jade.core.AID;
@@ -15,7 +16,6 @@ import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.wrapper.AgentContainer;
-import ru.edu.hse.configuration.JadeAgent;
 import ru.edu.hse.models.*;
 import ru.edu.hse.util.ColorfulLogger;
 import ru.edu.hse.util.DebugColor;
@@ -27,7 +27,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 
-@JadeAgent
 public class SupervisorAgent extends Agent {
     private static List<MenuDishModel> menuItems;
     private static final Queue<ACLMessage> visitors = new ArrayDeque<>();
@@ -70,7 +69,6 @@ public class SupervisorAgent extends Agent {
             DFAgentDescription[] result = DFService.search(this, template);
             for (var cook : result) {
                 cooks.add(cook.getName());
-                //logger.log(Level.INFO, MessageFormat.format("Found cook: {0}.", cook.getName()));
             }
 
             serviceDescription.setType("equipment-service");
@@ -78,7 +76,6 @@ public class SupervisorAgent extends Agent {
             result = DFService.search(this, template);
             for (var equipment : result) {
                 equipments.add(equipment.getName());
-                //logger.log(Level.INFO, MessageFormat.format("Found equipment: {0}.", equipment.getName()));
             }
         } catch (FIPAException e) {
             throw new RuntimeException(e);
@@ -226,7 +223,7 @@ public class SupervisorAgent extends Agent {
                         } else {
                             equipment = msgEquipment.getSender();
                         }
-                        // т.к. не всех нашли
+                        // Т.к. не всех нашли
                         step = 1;
                     } else if (cook == null) {
                         var messageTemplateCook = MessageTemplate.and(MessageTemplate.MatchConversationId("cook-reservation"),
@@ -248,7 +245,7 @@ public class SupervisorAgent extends Agent {
                             cook = msgCook.getSender();
                             step = 3;
                         }
-                        // т.к. не проверили ещё equip
+                        // Т.к. не проверили ещё equip
 
                     }
                 }
@@ -271,8 +268,6 @@ public class SupervisorAgent extends Agent {
                     equipRequestMessage.setContent(operationExecution);
                     equipRequestMessage.setConversationId("equipment-start");
                     myAgent.send(equipRequestMessage);
-
-                    // Начинаем искаьб
 
                     step = 0;
                 }
@@ -323,7 +318,6 @@ public class SupervisorAgent extends Agent {
                             throw new RuntimeException(e);
                         }
 
-                        // TODO: проверить по меню
                         var validDishes = new HashMap<Integer, MenuDishModel>();
                         for (var validDish : menuItems) {
                             validDishes.put(validDish.id, validDish);
@@ -336,7 +330,6 @@ public class SupervisorAgent extends Agent {
                             }
                         }
 
-                        // TODO: создать заказ
                         createOrderAgent(visitorOrder.getSender(), orderDishes);
                         logger.log(Level.INFO,
                                 "Supervisor creates order for " + visitorOrder.getSender().getLocalName());
@@ -351,8 +344,9 @@ public class SupervisorAgent extends Agent {
         private void createOrderAgent(AID aid, List<MenuDishModel> order) {
             try {
                 var mapper = new ObjectMapper();
-                DishCardsModel dishCardsModel = mapper.readValue(getClass().getClassLoader().getResource("dish_cards.json"),
-                        DishCardsModel.class);
+                DishCardsModel dishCardsModel =
+                        mapper.readValue(getClass().getClassLoader().getResource("dish_cards.json"),
+                                DishCardsModel.class);
                 MenuDishModel[] orderArray = new MenuDishModel[order.size()];
                 for (int i = 0; i < order.size(); ++i) {
                     orderArray[i] = order.get(i);
@@ -360,8 +354,10 @@ public class SupervisorAgent extends Agent {
                 container.createNewAgent(MessageFormat.format("OrderAgent$$${0}", aid.getLocalName()),
                         OrderAgent.class.getName(), new Object[]{orderArray, aid, dishCardsModel.dishCardModels}).start();
 
-            }  catch (Exception e) {
-                throw new RuntimeException(e);
+            } catch (DatabindException e) {
+                logger.log(Level.INFO, "File dish_cards.json has a wrong format");
+            } catch (Exception e) {
+                logger.log(Level.INFO, "An error occurred while converting dish_cards.json");
             }
         }
 
@@ -378,8 +374,10 @@ public class SupervisorAgent extends Agent {
                     DishCardsModel.class);
             container.createNewAgent("MenuAgent", MenuAgent.class.getName(),
                     new Object[]{model.menuDishModels, dishCardsModel.dishCardModels}).start();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (DatabindException e) {
+            logger.log(Level.INFO, "File menu_dishes.json has a wrong format");
+        } catch (Exception e) {
+            logger.log(Level.INFO, "An error occurred while converting menu_dishes.json");
         }
     }
 
@@ -391,8 +389,10 @@ public class SupervisorAgent extends Agent {
                     readValue(getClass().getClassLoader().getResource("products.json"),
                             ProductsModel.class);
             container.createNewAgent("WarehouseAgent", WarehouseAgent.class.getName(), model.productsModels()).start();
+        } catch (DatabindException e) {
+            logger.log(Level.INFO, "File products.json has a wrong format");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, "An error occurred while converting products.json");
         }
     }
 
@@ -406,8 +406,10 @@ public class SupervisorAgent extends Agent {
                 container.createNewAgent(visitorModel.name, VisitorAgent.class.getName(),
                         new Object[]{visitorModel}).start();
             }
+        } catch (DatabindException e) {
+            logger.log(Level.INFO, "File visitors_orders.json has a wrong format");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, "An error occurred while converting visitors_orders.json");
         }
     }
 
@@ -420,11 +422,13 @@ public class SupervisorAgent extends Agent {
                             EquipmentCollectionModel.class);
 
             for (var equipModel : model.equipmentModels()) {
-                container.createNewAgent(MessageFormat.format("EquipmentAgent{0}", equipModel.id), EquipmentAgent.class.getName(),
-                        new Object[]{equipModel}).start();
+                container.createNewAgent(MessageFormat.format("EquipmentAgent{0}", equipModel.id),
+                        EquipmentAgent.class.getName(), new Object[]{equipModel}).start();
             }
+        } catch (DatabindException e) {
+            logger.log(Level.INFO, "File equipment.json has a wrong format");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, "An error occurred while converting equipment.json");
         }
     }
 
@@ -440,8 +444,10 @@ public class SupervisorAgent extends Agent {
                 container.createNewAgent(MessageFormat.format("CookAgent{0}", cook.id), CookAgent.class.getName(),
                         new Object[]{cook}).start();
             }
+        } catch (DatabindException e) {
+            logger.log(Level.INFO, "File cookers.json has a wrong format");
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.INFO, "An error occurred while converting cookers.json");
         }
     }
 }
