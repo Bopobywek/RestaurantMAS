@@ -3,8 +3,8 @@
     "oper_id" : 0,
     "oper_proc" : 1,
     "oper_card" : 518,
-    "oper_started" : "2023-03-26T20:13:36",
-    "oper_ended" : "2023-03-26T20:13:36",
+    "oper_started" : "2023-03-26T20:54:14",
+    "oper_ended" : "2023-03-26T20:54:14",
     "oper_equip_id" : 14,
     "oper_coocker_id" : 15,
     "oper_active" : false
@@ -12,8 +12,8 @@
     "oper_id" : 1,
     "oper_proc" : 0,
     "oper_card" : 518,
-    "oper_started" : "2023-03-26T20:13:36",
-    "oper_ended" : "2023-03-26T20:13:36",
+    "oper_started" : "2023-03-26T20:54:14",
+    "oper_ended" : "2023-03-26T20:54:14",
     "oper_equip_id" : 14,
     "oper_coocker_id" : 14,
     "oper_active" : false
@@ -21,37 +21,37 @@
     "oper_id" : 2,
     "oper_proc" : 1,
     "oper_card" : 518,
-    "oper_started" : "2023-03-26T20:13:36",
-    "oper_ended" : "2023-03-26T20:13:36",
+    "oper_started" : "2023-03-26T20:54:14",
+    "oper_ended" : "2023-03-26T20:54:14",
     "oper_equip_id" : 14,
-    "oper_coocker_id" : 16,
+    "oper_coocker_id" : 15,
     "oper_active" : false
   }, {
     "oper_id" : 3,
     "oper_proc" : 0,
     "oper_card" : 518,
-    "oper_started" : "2023-03-26T20:13:36",
-    "oper_ended" : "2023-03-26T20:13:36",
+    "oper_started" : "2023-03-26T20:54:14",
+    "oper_ended" : "2023-03-26T20:54:14",
     "oper_equip_id" : 14,
-    "oper_coocker_id" : 15,
+    "oper_coocker_id" : 16,
     "oper_active" : false
   }, {
     "oper_id" : 4,
     "oper_proc" : 2,
     "oper_card" : 518,
-    "oper_started" : "2023-03-26T20:13:39",
-    "oper_ended" : "2023-03-26T20:13:39",
+    "oper_started" : "2023-03-26T20:54:17",
+    "oper_ended" : "2023-03-26T20:54:17",
     "oper_equip_id" : 14,
-    "oper_coocker_id" : 16,
+    "oper_coocker_id" : 15,
     "oper_active" : false
   }, {
     "oper_id" : 5,
     "oper_proc" : 2,
     "oper_card" : 518,
-    "oper_started" : "2023-03-26T20:13:39",
-    "oper_ended" : "2023-03-26T20:13:39",
+    "oper_started" : "2023-03-26T20:54:17",
+    "oper_ended" : "2023-03-26T20:54:17",
     "oper_equip_id" : 14,
-    "oper_coocker_id" : 16,
+    "oper_coocker_id" : 15,
     "oper_active" : false
   } ]
 }

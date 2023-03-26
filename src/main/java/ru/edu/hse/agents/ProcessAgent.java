@@ -102,7 +102,7 @@ public class ProcessAgent extends Agent {
                         orderMessage.addReceiver(order);
                         send(orderMessage);
                         step = 0;
-                        if(totalOperations == 0) {
+                        if (totalOperations == 0) {
                             logModel.ended = new Date();
                             logModel.isActive = false;
                             logModelQueue.add(logModel);
@@ -114,6 +114,8 @@ public class ProcessAgent extends Agent {
                 }
             }
         }
+
+        // addOperationsWaiter(operationsCount)
 
         @Override
         public boolean done() {

@@ -32,6 +32,7 @@ public class OrderAgent extends Agent {
     private HashMap<Integer, DishCardModel> dishCardModels = new HashMap<>();
     private static final AID warehouse = new AID("WarehouseAgent", AID.ISLOCALNAME);
     private double timeLeft = 0;
+    private int orderSum = 0;
 
     private final ColorfulLogger logger = new ColorfulLogger(DebugColor.BLUE, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
@@ -135,6 +136,7 @@ public class OrderAgent extends Agent {
                                 .stream()
                                 .mapToDouble(x -> x.time)
                                 .sum();
+                        orderSum += dish.price;
                         createProcess(dishCardModels.get(dish.card), index);
                         ++index;
                     }
@@ -188,9 +190,19 @@ public class OrderAgent extends Agent {
         JsonMessage cfp = new JsonMessage(ACLMessage.INFORM);
         cfp.addReceiver(visitor);
 
-        cfp.setContent(timeLeft);
+        cfp.setContent(new Object[]{timeLeft, orderSum});
         cfp.setConversationId("order-status");
         send(cfp);
     }
+
+
+    /*private void sendStatus() {
+        JsonMessage cfp = new JsonMessage(ACLMessage.INFORM);
+        cfp.addReceiver(visitor);
+
+        cfp.setContent(timeLeft);
+        cfp.setConversationId("order-status");
+        send(cfp);
+    }*/
 
 }

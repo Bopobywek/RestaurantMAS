@@ -143,14 +143,7 @@ public class OperationAgent extends Agent {
                     myAgent.send(cfp);
                     logModel.ended = new Date();
                     logModel.isActive = false;
-                    // TODO: сохранить в лог запись
                     logModelQueue.add(logModel);
-
-                    try {
-                        logger.log(Level.WARNING, mapper.writeValueAsString(logModel));
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
 
                     doDelete();
                 }
