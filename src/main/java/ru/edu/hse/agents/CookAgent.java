@@ -17,6 +17,7 @@ import ru.edu.hse.models.CookModel;
 import ru.edu.hse.models.OperationExecutionModel;
 import ru.edu.hse.util.ColorfulLogger;
 import ru.edu.hse.util.DebugColor;
+import ru.edu.hse.util.JsonMessage;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;
@@ -70,9 +71,10 @@ public class CookAgent extends Agent {
         }
         @Override
         public void action() {
-            ACLMessage cfp = new ACLMessage(ACLMessage.INFORM);
+            var cfp = new JsonMessage(ACLMessage.INFORM);
             cfp.addReceiver(operationAID);
-            cfp.setConversationId("operation-finish");
+            cfp.setContent(cook.id);
+            cfp.setConversationId("cook-finish");
             logger.log(Level.INFO, MessageFormat.format("{0} finish work and sent to operation signal", myAgent.getLocalName()));
             myAgent.send(cfp);
         }

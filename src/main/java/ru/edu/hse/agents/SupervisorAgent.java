@@ -2,7 +2,9 @@ package ru.edu.hse.agents;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -19,6 +21,8 @@ import ru.edu.hse.util.ColorfulLogger;
 import ru.edu.hse.util.DebugColor;
 import ru.edu.hse.util.JsonMessage;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -88,14 +92,33 @@ public class SupervisorAgent extends Agent {
         addBehaviour(new OperationServerBehaviour());
     }
 
+    private void saveLogs() {
+        var operationsLog = new OperationsLogModel();
+        operationsLog.log = OperationAgent.logModelQueue.stream().sorted(Comparator.comparingInt(x -> x.id)).toList();
+
+        var processesLogs = new ProcessesLogModel();
+        processesLogs.processesLog = ProcessAgent.logModelQueue.stream().sorted(Comparator.comparingInt(x -> x.id)).toList();
+
+        var mapper = new ObjectMapper();
+        ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
+        try {
+            writer.writeValue(new File("output/operation_log.json"), operationsLog);
+            writer.writeValue(new File("output/process_log.json"), processesLogs);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        
+    }
+
     @Override
     protected void takeDown() {
         try {
             DFService.deregister(this);
+            saveLogs();
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }
-
         System.out.println("Supervisor-agent " + getAID().getName() + " terminating.");
     }
 

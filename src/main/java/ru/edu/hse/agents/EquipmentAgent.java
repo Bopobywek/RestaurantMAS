@@ -17,6 +17,7 @@ import ru.edu.hse.models.EquipmentModel;
 import ru.edu.hse.models.OperationExecutionModel;
 import ru.edu.hse.util.ColorfulLogger;
 import ru.edu.hse.util.DebugColor;
+import ru.edu.hse.util.JsonMessage;
 
 import java.text.MessageFormat;
 import java.util.logging.Level;
@@ -71,7 +72,12 @@ public class EquipmentAgent extends Agent {
         }
         @Override
         public void action() {
-            logger.log(Level.INFO, MessageFormat.format("{0} finish work", myAgent.getLocalName()));
+            var cfp = new JsonMessage(ACLMessage.INFORM);
+            cfp.addReceiver(operationAID);
+            cfp.setContent(equipment.id);
+            cfp.setConversationId("equip-finish");
+            logger.log(Level.INFO, MessageFormat.format("{0} finish work and sent to operation signal", myAgent.getLocalName()));
+            myAgent.send(cfp);
         }
     }
 
