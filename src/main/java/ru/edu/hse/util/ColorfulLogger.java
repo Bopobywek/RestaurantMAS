@@ -14,7 +14,7 @@ public class ColorfulLogger {
     }
 
     public void log(Level level, String message) {
-        logger.log(level, MessageFormat.format("\u001B[{0}m{1}\u001B[0m", color.getValue(), message));
+        logger.log(level, MessageFormat.format("\u001b[38;5;{0}m{1}\u001B[0m", color.getValue(), message));
     }
 }
 

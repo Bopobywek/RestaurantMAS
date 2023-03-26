@@ -28,7 +28,7 @@ public class SupervisorAgent extends Agent {
     private static List<MenuDishModel> menuItems;
     private static final Queue<ACLMessage> visitors = new ArrayDeque<>();
     private static final AID menu = new AID("MenuAgent", AID.ISLOCALNAME);
-    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.YELLOW, jade.util.Logger.getMyLogger(this.getClass().getName()));
+    private final ColorfulLogger logger = new ColorfulLogger(DebugColor.BLOOD_COLOR, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
     private AgentContainer container;
 
@@ -52,6 +52,7 @@ public class SupervisorAgent extends Agent {
         createMenu();
         createWarehouse();
         createEquipment();
+        createCookers();
         createVisitors();
 
         addBehaviour(new ReceiveOrderBehaviour());
@@ -225,11 +226,27 @@ public class SupervisorAgent extends Agent {
             model = mapper.
                     readValue(getClass().getClassLoader().getResource("equipment.json"),
                             EquipmentCollectionModel.class);
-            int index = 0;
+
             for (var equipModel : model.equipmentModels()) {
-                container.createNewAgent(MessageFormat.format("{0}{1}", EquipmentAgent.class.getName(), index), EquipmentAgent.class.getName(),
+                container.createNewAgent(MessageFormat.format("EquipmentAgent{0}", equipModel.id), EquipmentAgent.class.getName(),
                         new Object[]{equipModel}).start();
-                ++index;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void createCookers() {
+        var mapper = new ObjectMapper();
+        CookersModel model = null;
+        try {
+            model = mapper.
+                    readValue(getClass().getClassLoader().getResource("cookers.json"),
+                            CookersModel.class);
+
+            for (var cook : model.cookers) {
+                container.createNewAgent(MessageFormat.format("CookAgent{0}", cook.id), CookAgent.class.getName(),
+                        new Object[]{cook}).start();
             }
         } catch (Exception e) {
             e.printStackTrace();

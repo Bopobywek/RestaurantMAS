@@ -10,6 +10,7 @@ import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.util.Logger;
+import jade.wrapper.AgentContainer;
 import ru.edu.hse.models.*;
 import ru.edu.hse.util.ColorfulLogger;
 import ru.edu.hse.util.DebugColor;
@@ -53,6 +54,11 @@ public class OrderAgent extends Agent {
             // TODO: список продуктов из нужных диш кардов на каждое блюдо
         }
 
+    }
+
+    @Override
+    protected void takeDown() {
+        System.out.println(MessageFormat.format("Order {0} is terminated.", getAID().getLocalName()));
     }
 
     private class ValidateDishesBehaviour extends Behaviour {
@@ -118,7 +124,12 @@ public class OrderAgent extends Agent {
                     // TODO: Создавать агентов процесса
                         logger.log(Level.INFO,
                                 MessageFormat.format("For {0} final dish list size is {1}", visitorAID.getLocalName(), finalMenuDishList.size()));
-                    step = 3;
+                        int index = 0;
+                        for (var dish : finalMenuDishList) {
+                            createProcess(dishCardModels.get(dish.card), index);
+                            ++index;
+                        }
+                        step = 3;
                 }
             }
         }
@@ -126,6 +137,16 @@ public class OrderAgent extends Agent {
         @Override
         public boolean done() {
             return step == 3;
+        }
+
+        private void createProcess(DishCardModel dishCard, int id) {
+            AgentContainer container = getContainerController();
+            try {
+                container.createNewAgent(MessageFormat.format("ProcessAgent{0}$$${1}", id, myAgent.getLocalName()),
+                        ProcessAgent.class.getName(), new Object[]{myAgent.getAID(), dishCard}).start();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
