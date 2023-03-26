@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
-import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.wrapper.AgentContainer;
@@ -24,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 public class ProcessAgent extends Agent {
-    private static AtomicInteger index = new AtomicInteger(0);
+    private static final AtomicInteger index = new AtomicInteger(0);
     private int id;
     private final Queue<OperationModel> operations = new ArrayDeque<>();
     public static final Queue<ProcessLogModel> logModelQueue = new ConcurrentLinkedDeque<>();
@@ -132,28 +131,4 @@ public class ProcessAgent extends Agent {
             }
         }
     }
-
-//    private class FinishOperationBehaviour extends CyclicBehaviour {
-//        private static final String CONVERSATION_ID = "operation-finish";
-//
-//        public void action() {
-//            var messageTemplate = MessageTemplate.and(MessageTemplate.MatchConversationId(CONVERSATION_ID),
-//                    MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-//            ACLMessage msg = myAgent.receive(messageTemplate);
-//            if (msg != null) {
-//                --totalOperations;
-//                ACLMessage orderMessage = new ACLMessage(ACLMessage.INFORM);
-//                orderMessage.setContent(msg.getContent());
-//                orderMessage.setConversationId(CONVERSATION_ID);
-//                orderMessage.addReceiver(order);
-//                send(orderMessage);
-//
-//                if(totalOperations == 0) {
-//                    doDelete();
-//                }
-//            } else {
-//                block();
-//            }
-//        }
-//    }
 }

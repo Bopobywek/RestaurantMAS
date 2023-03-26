@@ -5,11 +5,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import jade.util.Logger;
 import ru.edu.hse.models.DishCardModel;
 import ru.edu.hse.models.MenuDishModel;
 import ru.edu.hse.models.ProductModel;
@@ -21,11 +19,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class MenuAgent extends Agent {
     private List<MenuDishModel> menu;
-    private HashMap<Integer, DishCardModel> dishCardModels = new HashMap<>();
+    private final HashMap<Integer, DishCardModel> dishCardModels = new HashMap<>();
     private static final AID warehouse = new AID("WarehouseAgent", AID.ISLOCALNAME);
     private final ColorfulLogger logger = new ColorfulLogger(DebugColor.PURPLE, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
@@ -107,7 +104,7 @@ public class MenuAgent extends Agent {
                         logger.log(Level.INFO, "Menu received available products: " + msg.getContent());
 
                         var mapper = new ObjectMapper();
-                        List<ProductModel> products = null;
+                        List<ProductModel> products;
                         HashMap<Integer, Double> productModelHashMap = new HashMap<>();
                         try {
                             products = mapper.readValue(msg.getContent(),

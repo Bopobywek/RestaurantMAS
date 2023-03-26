@@ -5,20 +5,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
-import jade.core.behaviours.WakerBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import jade.util.Logger;
-import ru.edu.hse.models.DishModel;
 import ru.edu.hse.models.ProductModel;
 import ru.edu.hse.models.ReservationModel;
-import ru.edu.hse.models.VisitorModel;
 import ru.edu.hse.util.ColorfulLogger;
 import ru.edu.hse.util.DebugColor;
-import ru.edu.hse.util.JsonMessage;
 
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 

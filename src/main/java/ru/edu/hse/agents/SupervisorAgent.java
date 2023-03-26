@@ -35,8 +35,8 @@ public class SupervisorAgent extends Agent {
     private static final AID menu = new AID("MenuAgent", AID.ISLOCALNAME);
     private final ColorfulLogger logger = new ColorfulLogger(DebugColor.BLOOD_COLOR, jade.util.Logger.getMyLogger(this.getClass().getName()));
 
-    private List<AID> cooks = new ArrayList<>();
-    private List<AID> equipments = new ArrayList<>();
+    private final List<AID> cooks = new ArrayList<>();
+    private final List<AID> equipments = new ArrayList<>();
     private AgentContainer container;
 
 
@@ -108,7 +108,7 @@ public class SupervisorAgent extends Agent {
             throw new RuntimeException(e);
         }
 
-        
+
     }
 
     @Override
@@ -360,7 +360,7 @@ public class SupervisorAgent extends Agent {
                 container.createNewAgent(MessageFormat.format("OrderAgent$$${0}", aid.getLocalName()),
                         OrderAgent.class.getName(), new Object[]{orderArray, aid, dishCardsModel.dishCardModels}).start();
 
-            } catch (Exception e) {
+            }  catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -385,7 +385,7 @@ public class SupervisorAgent extends Agent {
 
     void createWarehouse() {
         var mapper = new ObjectMapper();
-        ProductsModel model = null;
+        ProductsModel model;
         try {
             model = mapper.
                     readValue(getClass().getClassLoader().getResource("products.json"),
@@ -402,11 +402,9 @@ public class SupervisorAgent extends Agent {
             var models = mapper.
                     readValue(getClass().getClassLoader().getResource("visitors_orders.json"),
                             VisitorsOrdersModel.class);
-            int index = 0;
             for (var visitorModel : models.visitorModels()) {
                 container.createNewAgent(visitorModel.name, VisitorAgent.class.getName(),
                         new Object[]{visitorModel}).start();
-                ++index;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -415,7 +413,7 @@ public class SupervisorAgent extends Agent {
 
     void createEquipment() {
         var mapper = new ObjectMapper();
-        EquipmentCollectionModel model = null;
+        EquipmentCollectionModel model;
         try {
             model = mapper.
                     readValue(getClass().getClassLoader().getResource("equipment.json"),
@@ -432,7 +430,7 @@ public class SupervisorAgent extends Agent {
 
     void createCookers() {
         var mapper = new ObjectMapper();
-        CookersModel model = null;
+        CookersModel model;
         try {
             model = mapper.
                     readValue(getClass().getClassLoader().getResource("cookers.json"),

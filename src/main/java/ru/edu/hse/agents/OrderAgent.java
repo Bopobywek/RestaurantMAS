@@ -7,10 +7,8 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import jade.util.Logger;
 import jade.wrapper.AgentContainer;
 import ru.edu.hse.models.*;
 import ru.edu.hse.util.ColorfulLogger;
@@ -23,13 +21,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.joining;
 
 public class OrderAgent extends Agent {
     private static AID visitor;
-    private HashMap<Integer, DishCardModel> dishCardModels = new HashMap<>();
+    private final HashMap<Integer, DishCardModel> dishCardModels = new HashMap<>();
     private static final AID warehouse = new AID("WarehouseAgent", AID.ISLOCALNAME);
     private double timeLeft = 0;
     private int orderSum = 0;
@@ -67,8 +62,8 @@ public class OrderAgent extends Agent {
     private class ValidateDishesBehaviour extends Behaviour {
         private static final String CONVERSATION_ID = "make-reservation";
         private List<MenuDishModel> finalMenuDishList;
-        private List<MenuDishModel> dishes;
-        private AID visitorAID;
+        private final List<MenuDishModel> dishes;
+        private final AID visitorAID;
 
         public ValidateDishesBehaviour(AID visitorAID, List<MenuDishModel> dishes) {
             this.visitorAID = visitorAID;
@@ -194,15 +189,4 @@ public class OrderAgent extends Agent {
         cfp.setConversationId("order-status");
         send(cfp);
     }
-
-
-    /*private void sendStatus() {
-        JsonMessage cfp = new JsonMessage(ACLMessage.INFORM);
-        cfp.addReceiver(visitor);
-
-        cfp.setContent(timeLeft);
-        cfp.setConversationId("order-status");
-        send(cfp);
-    }*/
-
 }

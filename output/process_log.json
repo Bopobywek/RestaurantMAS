@@ -2,19 +2,8 @@
   "process_log" : [ {
     "proc_id" : 0,
     "ord_dish" : 518,
-    "proc_started" : "2023-03-26T20:54:14",
-    "proc_ended" : "2023-03-26T20:54:14",
-    "proc_active" : false,
-    "proc_operations" : [ {
-      "proc_oper" : 1
-    }, {
-      "proc_oper" : 3
-    } ]
-  }, {
-    "proc_id" : 1,
-    "ord_dish" : 518,
-    "proc_started" : "2023-03-26T20:54:14",
-    "proc_ended" : "2023-03-26T20:54:14",
+    "proc_started" : "2023-03-26T21:22:11",
+    "proc_ended" : "2023-03-26T21:22:11",
     "proc_active" : false,
     "proc_operations" : [ {
       "proc_oper" : 0
@@ -22,10 +11,21 @@
       "proc_oper" : 2
     } ]
   }, {
+    "proc_id" : 1,
+    "ord_dish" : 518,
+    "proc_started" : "2023-03-26T21:22:11",
+    "proc_ended" : "2023-03-26T21:22:11",
+    "proc_active" : false,
+    "proc_operations" : [ {
+      "proc_oper" : 1
+    }, {
+      "proc_oper" : 3
+    } ]
+  }, {
     "proc_id" : 2,
     "ord_dish" : 518,
-    "proc_started" : "2023-03-26T20:54:17",
-    "proc_ended" : "2023-03-26T20:54:17",
+    "proc_started" : "2023-03-26T21:22:15",
+    "proc_ended" : "2023-03-26T21:22:15",
     "proc_active" : false,
     "proc_operations" : [ {
       "proc_oper" : 4

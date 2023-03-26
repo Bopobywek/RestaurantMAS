@@ -65,7 +65,7 @@ public class EquipmentAgent extends Agent {
     }
 
     private class SendOperationSignalBehaviour extends OneShotBehaviour {
-        private AID operationAID;
+        private final AID operationAID;
 
         public SendOperationSignalBehaviour(String operationName) {
             this.operationAID = new AID(operationName, AID.ISLOCALNAME);
